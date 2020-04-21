@@ -24,6 +24,7 @@ import br.com.sysdesc.boleto.repository.model.BoletoDadosSacadorAvalista;
 import br.com.sysdesc.boleto.repository.model.ConfiguracaoBoleto;
 import br.com.sysdesc.util.classes.DateUtil;
 import br.com.sysdesc.util.classes.LongUtil;
+import br.com.sysdesc.util.classes.StringUtil;
 import br.com.sysdesc.util.constants.MensagemConstants;
 import br.com.sysdesc.util.enumeradores.TipoStatusBoletoEnum;
 import br.com.sysdesc.util.enumeradores.TipoTituloEnum;
@@ -57,13 +58,28 @@ public class BoletoService {
         BancoBoletoService bancoGeracao = bancoBoletoFactory.getBancoBoleto(banco);
 
         String nossoNumero = bancoGeracao.gerarNossoNumero();
+        String agencia = StringUtil.formatarNumero(configuracao.getNumeroAgencia());
+        String conta = StringUtil.formatarNumero(configuracao.getNumeroConta());
+
+        Integer numeroAgencia = Integer.valueOf(agencia.substring(0, agencia.length() - 1));
+        Integer numeroConta = Integer.valueOf(conta.substring(0, conta.length() - 1));
+
+        String digitoAgencia = agencia.substring(agencia.length() - 1, agencia.length());
+        String digitoConta = conta.substring(conta.length() - 1, conta.length());
+
         Date dataDocumento = new Date();
 
         Titulo titulo = this.gerarTitulo(bancoGeracao, pagamentoBoleto, tipoTitulo, aceite, this.gerarSacado(cliente), nossoNumero, dataDocumento);
 
+        String nossoNumeroDV = nossoNumero.substring(nossoNumero.length() - 1, nossoNumero.length());
+
         Boleto boleto = new Boleto(titulo);
         boleto.setLocalPagamento("Pagável  em qualquer Banco até o Vencimento.");
         boleto.setInstrucaoAoSacado("");
+        boleto.addTextosExtras("txtRsNossoNumero", nossoNumero.substring(0, 7) + "-" + nossoNumeroDV);
+        boleto.addTextosExtras("txtFcNossoNumero", nossoNumero.substring(0, 7) + "-" + nossoNumeroDV);
+        boleto.addTextosExtras("txtRsAgenciaCodigoCedente", numeroAgencia + "-" + digitoAgencia + " / " + numeroConta + "-" + digitoConta);
+        boleto.addTextosExtras("txtFcAgenciaCodigoCedente", numeroAgencia + "-" + digitoAgencia + " / " + numeroConta + "-" + digitoConta);
 
         this.gerarInstrucoesSacado(boleto, pagamentoBoleto.getInstrucoes());
 

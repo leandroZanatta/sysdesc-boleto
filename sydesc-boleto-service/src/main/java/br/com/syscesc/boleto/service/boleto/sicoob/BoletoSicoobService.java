@@ -29,77 +29,78 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BoletoSicoobService implements BancoBoletoService {
 
-	protected final ConfiguracaoBoleto configuracaoBoleto;
+    protected final ConfiguracaoBoleto configuracaoBoleto;
 
-	public BoletoSicoobService(ConfiguracaoBoleto configuracaoBoleto) {
+    public BoletoSicoobService(ConfiguracaoBoleto configuracaoBoleto) {
 
-		this.configuracaoBoleto = configuracaoBoleto;
-	}
+        this.configuracaoBoleto = configuracaoBoleto;
+    }
 
-	@Override
-	public ContaBancaria createContaBancaria() {
+    @Override
+    public ContaBancaria createContaBancaria() {
 
-		String agencia = StringUtil.formatarNumero(configuracaoBoleto.getNumeroAgencia());
+        String agencia = StringUtil.formatarNumero(configuracaoBoleto.getNumeroAgencia());
 
-		Integer numeroAgencia = Integer.valueOf(agencia.substring(0, agencia.length() - 1));
-		Integer conta = Integer.valueOf(StringUtil.formatarNumero(configuracaoBoleto.getNumeroConta()));
+        Integer numeroAgencia = Integer.valueOf(agencia.substring(0, agencia.length() - 1));
+        Integer conta = Integer.valueOf(StringUtil.formatarNumero(configuracaoBoleto.getNumeroConta()));
 
-		String digitoAgencia = agencia.substring(agencia.length() - 1, agencia.length());
+        String digitoAgencia = agencia.substring(agencia.length() - 1, agencia.length());
 
-		ContaBancaria contaBancaria = new ContaBancaria(BancosSuportados.BANCOOB.create());
-		contaBancaria.setAgencia(new Agencia(numeroAgencia, digitoAgencia));
-		contaBancaria.setNumeroDaConta(new NumeroDaConta(conta));
-		contaBancaria.setCarteira(new Carteira(configuracaoBoleto.getCodigoCarteira().intValue()));
+        ContaBancaria contaBancaria = new ContaBancaria(BancosSuportados.BANCOOB.create());
+        contaBancaria.setAgencia(new Agencia(numeroAgencia, digitoAgencia));
+        contaBancaria.setNumeroDaConta(new NumeroDaConta(conta));
+        contaBancaria.setCarteira(new Carteira(configuracaoBoleto.getCodigoCarteira().intValue()));
 
-		Image image = null;
+        Image image = null;
 
-		try {
+        try {
 
-			image = ImageIO.read(new File(Configuracoes.FOLDER_IMAGE + File.separator + "logo-sicoob.png"));
+            image = ImageIO.read(new File(Configuracoes.FOLDER_IMAGE + File.separator + "logo-sicoob.png"));
 
-			contaBancaria.getBanco().setImgLogo(image);
-		} catch (IOException e) {
+            contaBancaria.getBanco().setImgLogo(image);
+        } catch (IOException e) {
 
-			log.warn("NÃO FOI POSSIVEL GERAR A LOGO DO SICOOB PARA GERAÇÃO DO BOLETO", e);
-		}
+            log.warn("NÃO FOI POSSIVEL GERAR A LOGO DO SICOOB PARA GERAÇÃO DO BOLETO", e);
+        }
 
-		return contaBancaria;
-	}
+        return contaBancaria;
+    }
 
-	@Override
-	public String gerarNossoNumero() {
+    @Override
+    public String gerarNossoNumero() {
 
-		String inicialNossoNumero = padLeft(this.configuracaoBoleto.getNossoNumero().toString(), 7L);
+        String inicialNossoNumero = padLeft(this.configuracaoBoleto.getNossoNumero().toString(), 7L);
+        String agencia = padLeft(formatarNumero(this.configuracaoBoleto.getNumeroAgencia()), 5L);
 
-		String nossoNumero = concat(formatarNumero(configuracaoBoleto.getNumeroAgencia()).substring(0, 4),
-				padLeft(formatarNumero(configuracaoBoleto.getNumeroConta()), 10L), inicialNossoNumero);
+        String nossoNumero = concat(agencia.substring(0, 4), padLeft(formatarNumero(configuracaoBoleto.getNumeroConta()), 10L), inicialNossoNumero);
 
-		return concat(inicialNossoNumero, calcularDigitoVerificador(nossoNumero));
-	}
+        return concat(inicialNossoNumero, calcularDigitoVerificador(nossoNumero));
+    }
 
-	private String calcularDigitoVerificador(String nossoNumero) {
+    private String calcularDigitoVerificador(String nossoNumero) {
 
-		List<Integer> numerosMultiplicacao = Arrays.asList("319731973197319731973".split("")).stream()
-				.mapToInt(Integer::valueOf).boxed().collect(Collectors.toList());
+        List<Integer> numerosMultiplicacao = Arrays.asList("319731973197319731973".split("")).stream().mapToInt(Integer::valueOf).boxed()
+                .collect(Collectors.toList());
 
-		List<Integer> numerosBase = Arrays.asList(nossoNumero.split("")).stream().mapToInt(Integer::valueOf).boxed()
-				.collect(Collectors.toList());
+        List<Integer> numerosBase = Arrays.asList(nossoNumero.split("")).stream().mapToInt(Integer::valueOf).boxed().collect(Collectors.toList());
 
-		Double valor = 0.0;
+        Double valor = 0.0;
 
-		for (int i = 0; i < numerosBase.size(); i++) {
-			valor += numerosBase.get(i) * numerosMultiplicacao.get(i);
-		}
+        for (int i = 0; i < numerosBase.size(); i++) {
+            valor += numerosBase.get(i) * numerosMultiplicacao.get(i);
+        }
 
-		Integer digito = (int) (11 - (valor % 11));
+        Integer resto = (int) (valor % 11);
 
-		return digito <= 1 ? "0" : digito.toString();
-	}
+        Integer digito = (11 - resto);
 
-	@Override
-	public Cedente gerarCedente() {
+        return resto <= 1 ? "0" : digito.toString();
+    }
 
-		return new Cedente(configuracaoBoleto.getNome(), configuracaoBoleto.getCgc());
-	}
+    @Override
+    public Cedente gerarCedente() {
+
+        return new Cedente(configuracaoBoleto.getNome(), configuracaoBoleto.getCgc());
+    }
 
 }
