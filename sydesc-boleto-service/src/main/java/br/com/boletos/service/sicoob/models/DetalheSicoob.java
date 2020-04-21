@@ -2,12 +2,14 @@ package br.com.boletos.service.sicoob.models;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.jrimum.texgit.FlatFile;
 import org.jrimum.texgit.Record;
 
 import br.com.sysdesc.boleto.repository.model.Boleto;
+import br.com.sysdesc.boleto.repository.model.BoletoDadosCliente;
+import br.com.sysdesc.boleto.repository.model.BoletoDadosPagamento;
+import br.com.sysdesc.boleto.repository.model.BoletoDadosSacadorAvalista;
 import br.com.sysdesc.boletos.util.RecordUtil;
 import br.com.sysdesc.boletos.util.model.sicoob.AgenciaSicoob;
 import br.com.sysdesc.boletos.util.model.sicoob.DetalhePSicoob;
@@ -15,100 +17,138 @@ import br.com.sysdesc.boletos.util.model.sicoob.DetalheQSicoob;
 import br.com.sysdesc.boletos.util.model.sicoob.DetalheRSicoob;
 import br.com.sysdesc.boletos.util.model.sicoob.DetalheSSicoob;
 import br.com.sysdesc.util.classes.ContadorUtil;
+import br.com.sysdesc.util.classes.StringUtil;
+import br.com.sysdesc.util.enumeradores.TipoClienteEnum;
 import lombok.Data;
 
 @Data
 public class DetalheSicoob {
 
-	private final DetalhePSicoob detalhePSicoob = new DetalhePSicoob();
+    private static final long A4_SEM_ENVELOPAMENTO = 4L;
 
-	private final DetalheQSicoob detalheQSicoob = new DetalheQSicoob();
+    private static final long ENTRADA_TITULOS = 1L;
 
-	private final DetalheRSicoob detalheRSicoob = new DetalheRSicoob();
+    private final DetalhePSicoob detalhePSicoob = new DetalhePSicoob();
 
-	private final DetalheSSicoob detalheSSicoob = new DetalheSSicoob();
+    private final DetalheQSicoob detalheQSicoob = new DetalheQSicoob();
 
-	public DetalheSicoob(ContadorUtil contadorUtil, AgenciaSicoob agencia, Boleto boleto) {
+    private final DetalheRSicoob detalheRSicoob = new DetalheRSicoob();
 
-		detalhePSicoob.setNumeroRegistro(contadorUtil.next());
-		detalheQSicoob.setNumeroRegistro(contadorUtil.next());
-		detalheRSicoob.setNumeroRegistro(contadorUtil.next());
-		detalheSSicoob.setNumeroRegistro(contadorUtil.next());
+    private final DetalheSSicoob detalheSSicoob = new DetalheSSicoob();
 
-		detalhePSicoob.setAgencia(agencia);
-		detalhePSicoob.setAceite("N");
-		detalhePSicoob.setModalidade("01");
-		detalhePSicoob.setIdentificacaoTitulo("");
-		detalhePSicoob.setNumeroDocumento("DUPLICATA 01");
-		detalhePSicoob.setVencimento(new SimpleDateFormat("ddMMYYYY").format(new Date()));
-		detalhePSicoob.setDataDesconto(new SimpleDateFormat("ddMMYYYY").format(new Date()));
-		detalhePSicoob.setDataJurosMora(new SimpleDateFormat("ddMMYYYY").format(new Date()));
-		detalhePSicoob.setDataEmissao(new SimpleDateFormat("ddMMYYYY").format(new Date()));
-		detalhePSicoob.setCarteira(1L);
-		detalhePSicoob.setTipoFormulario(4L);
-		detalhePSicoob.setCodigoDesconto(1L);
-		detalhePSicoob.setNumeroParcela(1L);
-		detalhePSicoob.setCodigoJurosMora(2L);
-		detalhePSicoob.setCodigoMovimento(1L);
-		detalhePSicoob.setCodigoParaProtesto(1L);
-		detalhePSicoob.setEspecieTitulo(2L);
-		detalhePSicoob.setNossoNumero(1L);
-		detalhePSicoob.setNumeroContrato(1980L);
-		detalhePSicoob.setNumeroLote(1L);
-		detalhePSicoob.setValorAbatimento(BigDecimal.valueOf(0.0));
-		detalhePSicoob.setValorDesconto(BigDecimal.valueOf(0.1));
-		detalhePSicoob.setValorIof(BigDecimal.valueOf(0.0));
-		detalhePSicoob.setValorJurosMora(BigDecimal.valueOf(0.11));
-		detalhePSicoob.setValorNominal(BigDecimal.valueOf(18.4));
-		detalhePSicoob.setPrazoProtesto(0L);
+    public DetalheSicoob(Long numeroLote, ContadorUtil contadorUtil, AgenciaSicoob agencia, Boleto boleto) {
 
-		detalheQSicoob.setBairro("Centro");
-		detalheQSicoob.setBancoCorrespondente("");
-		detalheQSicoob.setBancoCompensacao(0L);
-		detalheQSicoob.setCep(89910L);
-		detalheQSicoob.setCgcCliente(8783466940L);
-		detalheQSicoob.setCidade("Descanso");
-		detalheQSicoob.setEndereco("Rua Padre Francisco massure");
-		detalheQSicoob.setNome("Leandro Zanatta");
-		detalheQSicoob.setCodigoSacadorAvalista(0L);
-		detalheQSicoob.setNomeSacadorAvalista("");
-		detalheQSicoob.setCgcSacadorAvalista(0L);
-		detalheQSicoob.setSufixoCep(0L);
-		detalheQSicoob.setTipoCliente(1L);
-		detalheQSicoob.setUf("SC");
-		detalheQSicoob.setCodigoMovimento(1L);
-		detalheQSicoob.setNumeroLote(1L);
+        BoletoDadosPagamento boletoDadosPagamento = boleto.getBoletoDadosPagamento();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("ddMMYYYY");
 
-		detalheRSicoob.setCodigoDesconto2(0L);
-		detalheRSicoob.setCodigoDesconto3(0L);
-		detalheRSicoob.setCodigoMulta(0L);
-		detalheRSicoob.setDataDesconto2("");
-		detalheRSicoob.setDataDesconto3("");
-		detalheRSicoob.setDataLimitePagamento(new SimpleDateFormat("ddMMYYYY").format(new Date()));
-		detalheRSicoob.setDataMulta("");
-		detalheRSicoob.setValorDesconto2(BigDecimal.ZERO);
-		detalheRSicoob.setValorDesconto3(BigDecimal.ZERO);
-		detalheRSicoob.setValorMulta(BigDecimal.ZERO);
-		detalheRSicoob.setCodigoMovimento(1L);
-		detalheRSicoob.setNumeroLote(1L);
+        detalhePSicoob.setNumeroRegistro(contadorUtil.next());
+        detalheQSicoob.setNumeroRegistro(contadorUtil.next());
+        detalheRSicoob.setNumeroRegistro(contadorUtil.next());
+        detalheSSicoob.setNumeroRegistro(contadorUtil.next());
 
-		detalheSSicoob.setCodigoMovimento(1L);
-		detalheSSicoob.setNumeroLote(1L);
-		detalheSSicoob.setInformacao5("APÓS VENCIMENTO MULTA DE XX");
-		detalheSSicoob.setInformacao6("APÓS VENCIMENTO, MORA DE XX");
-		detalheSSicoob.setInformacao7("APENAS TESTE.");
-		detalheSSicoob.setInformacao8("");
-		detalheSSicoob.setInformacao9("");
+        detalheQSicoob.setNumeroLote(numeroLote);
+        detalheRSicoob.setNumeroLote(numeroLote);
+        detalhePSicoob.setNumeroLote(numeroLote);
+        detalheSSicoob.setNumeroLote(numeroLote);
 
-		detalhePSicoob.setDetalheQSicoob(detalheQSicoob);
-		detalhePSicoob.setDetalheRSicoob(detalheRSicoob);
-		detalhePSicoob.setDetalheSSicoob(detalheSSicoob);
+        detalhePSicoob.setCodigoMovimento(ENTRADA_TITULOS);
+        detalheQSicoob.setCodigoMovimento(ENTRADA_TITULOS);
+        detalheRSicoob.setCodigoMovimento(ENTRADA_TITULOS);
+        detalheSSicoob.setCodigoMovimento(ENTRADA_TITULOS);
 
-	}
+        detalhePSicoob.setAgencia(agencia);
+        detalhePSicoob.setDataEmissao(simpleDateFormat.format(boleto.getDataCadastro()));
+        detalhePSicoob.setVencimento(simpleDateFormat.format(boleto.getDataVencimento()));
+        detalhePSicoob.setValorNominal(boleto.getValorBoleto());
+        detalhePSicoob.setNossoNumero(Long.valueOf(boleto.getNossoNumero()));
 
-	public void build(FlatFile<Record> records) {
+        detalhePSicoob.setAceite(boleto.getAceite());
+        detalhePSicoob.setEspecieTitulo(boleto.getEspecieTitulo());
 
-		RecordUtil.createRecord(detalhePSicoob, records);
-	}
+        detalhePSicoob.setCodigoParaProtesto(boletoDadosPagamento.getCodigoProtesto());
+        detalhePSicoob.setPrazoProtesto(boletoDadosPagamento.getDiasProtesto());
+        detalhePSicoob.setModalidade(boletoDadosPagamento.getModalidade());
+        detalhePSicoob.setCarteira(boletoDadosPagamento.getCodigoCarteira());
+        detalhePSicoob.setCodigoJurosMora(boletoDadosPagamento.getCodigoJurosMora());
+        detalhePSicoob.setDataJurosMora(simpleDateFormat.format(boletoDadosPagamento.getDataJurosMora()));
+        detalhePSicoob.setValorJurosMora(boletoDadosPagamento.getValorJurosMora());
+
+        detalhePSicoob.setIdentificacaoTitulo(boletoDadosPagamento.getBoleto().getIdBoleto().toString());
+        detalhePSicoob.setNumeroDocumento(boletoDadosPagamento.getBoleto().getIdBoleto().toString());
+
+        detalhePSicoob.setTipoFormulario(A4_SEM_ENVELOPAMENTO);
+        detalhePSicoob.setNumeroParcela(1L);
+        detalhePSicoob.setCodigoDesconto(0L);//Isento
+        detalhePSicoob.setDataDesconto("");
+        detalhePSicoob.setValorDesconto(BigDecimal.ZERO);
+
+        //Numero do contrato para operação de crédito(adicionar nas configurações do boleto) 0 - Simples sem registro 
+        detalhePSicoob.setNumeroContrato(0L);
+        detalhePSicoob.setValorAbatimento(BigDecimal.ZERO);
+        detalhePSicoob.setValorIof(BigDecimal.ZERO);
+
+        this.gerarDetalheQ(boleto);
+
+        detalheRSicoob.setDataLimitePagamento(simpleDateFormat.format(boletoDadosPagamento.getDataLimitePagamento()));
+
+        detalheRSicoob.setCodigoMulta(boletoDadosPagamento.getCodigoMulta());
+        detalheRSicoob.setDataMulta(simpleDateFormat.format(boletoDadosPagamento.getDataMulta()));
+        detalheRSicoob.setValorMulta(boletoDadosPagamento.getValorMulta());
+
+        detalheRSicoob.setCodigoDesconto2(0L);
+        detalheRSicoob.setCodigoDesconto3(0L);
+        detalheRSicoob.setDataDesconto2("");
+        detalheRSicoob.setDataDesconto3("");
+        detalheRSicoob.setValorDesconto2(BigDecimal.ZERO);
+        detalheRSicoob.setValorDesconto3(BigDecimal.ZERO);
+
+        detalheSSicoob.setInformacao5("APÓS VENCIMENTO MULTA DE XX");
+        detalheSSicoob.setInformacao6("APÓS VENCIMENTO, MORA DE XX");
+        detalheSSicoob.setInformacao7("APENAS TESTE.");
+        detalheSSicoob.setInformacao8("");
+        detalheSSicoob.setInformacao9("");
+
+        detalhePSicoob.setDetalheQSicoob(detalheQSicoob);
+        detalhePSicoob.setDetalheRSicoob(detalheRSicoob);
+        detalhePSicoob.setDetalheSSicoob(detalheSSicoob);
+
+    }
+
+    private void gerarDetalheQ(Boleto boleto) {
+
+        BoletoDadosCliente boletoDadosCliente = boleto.getBoletoDadosCliente();
+        BoletoDadosSacadorAvalista dadosSacadorAvalista = boleto.getBoletoDadosSacadorAvalista();
+
+        detalheQSicoob.setTipoCliente(getTipoCliente(boletoDadosCliente.getFlagTipoCliente()));
+        detalheQSicoob.setCgcCliente(Long.valueOf(StringUtil.formatarNumero(boletoDadosCliente.getCgc())));
+        detalheQSicoob.setNome(boletoDadosCliente.getNome());
+
+        detalheQSicoob.setUf(boletoDadosCliente.getUF());
+        detalheQSicoob.setCidade(boletoDadosCliente.getCidade());
+        detalheQSicoob.setEndereco(boletoDadosCliente.getEndereco());
+        detalheQSicoob.setBairro(boletoDadosCliente.getBairro());
+        detalheQSicoob.setCep(Long.valueOf(boletoDadosCliente.getCep().substring(0, 5)));
+        detalheQSicoob.setSufixoCep(Long.valueOf(boletoDadosCliente.getCep().substring(6, 9)));
+
+        if (dadosSacadorAvalista != null) {
+
+            detalheQSicoob.setTipoSacadorAvalista(getTipoCliente(dadosSacadorAvalista.getFlagTipoCliente()));
+            detalheQSicoob.setNomeSacadorAvalista(dadosSacadorAvalista.getNome());
+            detalheQSicoob.setCgcSacadorAvalista(Long.valueOf(StringUtil.formatarNumero(dadosSacadorAvalista.getCgc())));
+        }
+
+        detalheQSicoob.setBancoCorrespondente("");
+        detalheQSicoob.setBancoCompensacao(0L);
+    }
+
+    private long getTipoCliente(String tipoCliente) {
+
+        return TipoClienteEnum.findByCodigo(tipoCliente).equals(TipoClienteEnum.PESSOA_FISICA) ? 1L : 2L;
+    }
+
+    public void build(FlatFile<Record> records) {
+
+        RecordUtil.createRecord(detalhePSicoob, records);
+    }
 
 }

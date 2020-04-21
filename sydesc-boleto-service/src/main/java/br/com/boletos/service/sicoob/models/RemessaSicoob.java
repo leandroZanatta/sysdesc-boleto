@@ -57,6 +57,7 @@ public class RemessaSicoob {
 	}
 
 	private void criarCedente() {
+
 		TipoClienteEnum tipoClienteEnum = TipoClienteEnum.findByCodigo(configuracaoBoleto.getFlagTipoCliente());
 
 		cedente.setTipoCliente(TipoClienteEnum.PESSOA_FISICA.equals(tipoClienteEnum) ? "1" : "2");

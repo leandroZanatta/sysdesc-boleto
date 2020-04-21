@@ -19,70 +19,69 @@ import br.com.sysdesc.util.classes.ContadorUtil;
 
 public class LoteSicoob {
 
-	private ContadorUtil contadorUtilDetalhes = new ContadorUtil();
+    private ContadorUtil contadorUtilDetalhes = new ContadorUtil();
 
-	private final AgenciaSicoob agencia;
+    private final AgenciaSicoob agencia;
 
-	private final List<DetalheSicoob> detalheSicoobs = new ArrayList<>();
+    private final List<DetalheSicoob> detalheSicoobs = new ArrayList<>();
 
-	private final HeaderLoteSicoob headerLoteSicoob = new HeaderLoteSicoob();
-	private final TraillerLoteSicoob traillerLoteSicoob = new TraillerLoteSicoob();
+    private final HeaderLoteSicoob headerLoteSicoob = new HeaderLoteSicoob();
+    private final TraillerLoteSicoob traillerLoteSicoob = new TraillerLoteSicoob();
 
-	public LoteSicoob(ContadorUtil contadorLotes, Long numeroRemessaLote, AgenciaSicoob agencia,
-			CedenteSicoob cedente) {
-		this.agencia = agencia;
+    public LoteSicoob(ContadorUtil contadorLotes, Long numeroRemessaLote, AgenciaSicoob agencia, CedenteSicoob cedente) {
+        this.agencia = agencia;
 
-		headerLoteSicoob.setAgencia(agencia);
-		headerLoteSicoob.setCedente(cedente);
-		headerLoteSicoob.setNumeroLote(contadorLotes.next());
-		headerLoteSicoob.setNumeroRemessa(numeroRemessaLote);
-		headerLoteSicoob.setDataGeracao(new SimpleDateFormat("ddMMYYYY").format(new Date()));
+        headerLoteSicoob.setAgencia(agencia);
+        headerLoteSicoob.setCedente(cedente);
+        headerLoteSicoob.setNumeroLote(contadorLotes.next());
+        headerLoteSicoob.setNumeroRemessa(numeroRemessaLote);
+        headerLoteSicoob.setDataGeracao(new SimpleDateFormat("ddMMYYYY").format(new Date()));
 
-		traillerLoteSicoob.setNumeroLote(contadorLotes.getValue());
-	}
+        traillerLoteSicoob.setNumeroLote(contadorLotes.getValue());
+    }
 
-	public void addDetalhe(Boleto boleto) {
+    public void addDetalhe(Boleto boleto) {
 
-		detalheSicoobs.add(new DetalheSicoob(contadorUtilDetalhes, agencia, boleto));
-	}
+        detalheSicoobs.add(new DetalheSicoob(headerLoteSicoob.getNumeroLote(), contadorUtilDetalhes, agencia, boleto));
+    }
 
-	public List<DetalheSicoob> getDetalheSicoobs() {
-		return detalheSicoobs;
-	}
+    public List<DetalheSicoob> getDetalheSicoobs() {
+        return detalheSicoobs;
+    }
 
-	public HeaderLoteSicoob getHeaderLoteSicoob() {
-		return headerLoteSicoob;
-	}
+    public HeaderLoteSicoob getHeaderLoteSicoob() {
+        return headerLoteSicoob;
+    }
 
-	public void build(FlatFile<Record> records) {
+    public void build(FlatFile<Record> records) {
 
-		RecordUtil.createRecord(headerLoteSicoob, records);
+        RecordUtil.createRecord(headerLoteSicoob, records);
 
-		detalheSicoobs.forEach(detalhe -> detalhe.build(records));
+        detalheSicoobs.forEach(detalhe -> detalhe.build(records));
 
-		totalizarTrailler();
+        totalizarTrailler();
 
-		RecordUtil.createRecord(traillerLoteSicoob, records);
-	}
+        RecordUtil.createRecord(traillerLoteSicoob, records);
+    }
 
-	private void totalizarTrailler() {
+    private void totalizarTrailler() {
 
-		Long quantidade = Long.valueOf(detalheSicoobs.size());
+        Long quantidade = Long.valueOf(detalheSicoobs.size());
 
-		BigDecimal totalTitulos = detalheSicoobs.stream().map(detalhe -> detalhe.getDetalhePSicoob().getValorNominal())
-				.reduce(BigDecimal.ZERO, (detalhe, acululador) -> detalhe.add(acululador));
+        BigDecimal totalTitulos = detalheSicoobs.stream().map(detalhe -> detalhe.getDetalhePSicoob().getValorNominal()).reduce(BigDecimal.ZERO,
+                (detalhe, acululador) -> detalhe.add(acululador));
 
-		traillerLoteSicoob.setQuantidadeRegistros(quantidade);
-		traillerLoteSicoob.setQuantidadeTitulosCobrancaSimples(quantidade);
-		traillerLoteSicoob.setTotalizacaoCobrancaSimples(totalTitulos);
+        traillerLoteSicoob.setQuantidadeRegistros(quantidade);
+        traillerLoteSicoob.setQuantidadeTitulosCobrancaSimples(quantidade);
+        traillerLoteSicoob.setTotalizacaoCobrancaSimples(totalTitulos);
 
-		// Perguntar o que é isto.
-		traillerLoteSicoob.setQuantidadeTitulosCobrancaCaucionada(0L);
-		traillerLoteSicoob.setQuantidadeTitulosCobrancaDescontada(0L);
-		traillerLoteSicoob.setQuantidadeTitulosCobrancaVinculada(0L);
-		traillerLoteSicoob.setTotalizacaoCobrancaCaucionada(BigDecimal.ZERO);
-		traillerLoteSicoob.setTotalizacaoCobrancaDescontada(BigDecimal.ZERO);
-		traillerLoteSicoob.setTotalizacaoCobrancaVinculada(BigDecimal.ZERO);
+        // Perguntar o que é isto.
+        traillerLoteSicoob.setQuantidadeTitulosCobrancaCaucionada(0L);
+        traillerLoteSicoob.setQuantidadeTitulosCobrancaDescontada(0L);
+        traillerLoteSicoob.setQuantidadeTitulosCobrancaVinculada(0L);
+        traillerLoteSicoob.setTotalizacaoCobrancaCaucionada(BigDecimal.ZERO);
+        traillerLoteSicoob.setTotalizacaoCobrancaDescontada(BigDecimal.ZERO);
+        traillerLoteSicoob.setTotalizacaoCobrancaVinculada(BigDecimal.ZERO);
 
-	}
+    }
 }

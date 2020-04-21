@@ -26,10 +26,6 @@ public class RemessaService {
 
 	private BancoDAO bancoDAO = new BancoDAO();
 
-	public RemessaService() {
-
-	}
-
 	public void processarRemessaBancosSuportados() {
 
 		bancoDAO.buscarBancosSuporteBoleto().forEach(this::gerarRemessa);
