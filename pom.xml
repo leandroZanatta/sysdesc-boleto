@@ -14,8 +14,8 @@
 		<sysdesc.pesquisa.version>0.0.1</sysdesc.pesquisa.version>
 	</properties>
 	<modules>
-		<module>sydesc-boleto-service</module>
-		<module>sysdesc-boleto-repository</module>
 		<module>sysdesc-boleto-util</module>
+		<module>sysdesc-boleto-repository</module>
+		<module>sydesc-boleto-service</module>
 	</modules>
 </project>

@@ -22,6 +22,7 @@ import br.com.sysdesc.boleto.repository.model.BoletoDadosCliente;
 import br.com.sysdesc.boleto.repository.model.BoletoDadosPagamento;
 import br.com.sysdesc.boleto.repository.model.BoletoDadosSacadorAvalista;
 import br.com.sysdesc.boleto.repository.model.ConfiguracaoBoleto;
+import br.com.sysdesc.boletos.util.vo.PagamentoBoletoVO;
 import br.com.sysdesc.util.classes.DateUtil;
 import br.com.sysdesc.util.classes.LongUtil;
 import br.com.sysdesc.util.classes.StringUtil;
@@ -29,7 +30,6 @@ import br.com.sysdesc.util.constants.MensagemConstants;
 import br.com.sysdesc.util.enumeradores.TipoStatusBoletoEnum;
 import br.com.sysdesc.util.enumeradores.TipoTituloEnum;
 import br.com.sysdesc.util.exception.SysDescException;
-import br.com.sysdesc.util.vo.PagamentoBoletoVO;
 
 public class BoletoService {
 
