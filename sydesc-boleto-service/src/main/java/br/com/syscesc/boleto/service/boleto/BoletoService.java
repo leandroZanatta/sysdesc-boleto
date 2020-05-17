@@ -2,11 +2,13 @@ package br.com.syscesc.boleto.service.boleto;
 
 import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarJurosMora;
 import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarMulta;
+import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarNaoRecebimento;
 import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarProtesto;
 import static br.com.sysdesc.util.classes.DateUtil.addDays;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import org.jrimum.bopepo.Boleto;
 import org.jrimum.bopepo.view.BoletoViewer;
@@ -76,6 +78,8 @@ public class BoletoService {
         String nossoNumeroDV = nossoNumero.substring(nossoNumero.length() - 1, nossoNumero.length());
 
         Date diaMaximoPagamento = addDays(pagamentoBoleto.getDataVencimento(), configuracao.getDiasMaximoPagamento());
+        Date diaProtesto = addDays(pagamentoBoleto.getDataVencimento(), configuracao.getDiasProtesto());
+
         BigDecimal valor = pagamentoBoleto.getValorPagamento();
 
         Boleto boleto = new Boleto(titulo);
@@ -86,9 +90,10 @@ public class BoletoService {
         boleto.addTextosExtras("txtRsAgenciaCodigoCedente", numeroAgencia + "-" + digitoAgencia + " / " + numeroConta + "-" + digitoConta);
         boleto.addTextosExtras("txtFcAgenciaCodigoCedente", numeroAgencia + "-" + digitoAgencia + " / " + numeroConta + "-" + digitoConta);
 
-        boleto.setInstrucao1(montarJurosMora(configuracao.getCodigoJurosMora(), valor, configuracao.getValorJurosMora()));
-        boleto.setInstrucao2(montarMulta(configuracao.getCodigoMulta(), valor, configuracao.getValorMulta()));
-        boleto.setInstrucao3(montarProtesto(configuracao.getCodigoProtesto(), diaMaximoPagamento));
+        boleto.setInstrucao1(montarNaoRecebimento(diaMaximoPagamento));
+        boleto.setInstrucao2(montarJurosMora(configuracao.getCodigoJurosMora(), valor, configuracao.getValorJurosMora()));
+        boleto.setInstrucao3(montarMulta(configuracao.getCodigoMulta(), valor, configuracao.getValorMulta()));
+        boleto.setInstrucao4(montarProtesto(configuracao.getCodigoProtesto(), diaProtesto));
 
         byte[] arquivoBoleto = new BoletoViewer(boleto).getPdfAsByteArray();
 
@@ -186,6 +191,11 @@ public class BoletoService {
         sacado.addEndereco(enderecoSac);
 
         return sacado;
+    }
+
+    public void salvar(List<br.com.sysdesc.boleto.repository.model.Boleto> boletos) {
+
+        boletoDAO.salvar(boletos);
     }
 
 }

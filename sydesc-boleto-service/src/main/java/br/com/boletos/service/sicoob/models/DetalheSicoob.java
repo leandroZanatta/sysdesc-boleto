@@ -2,10 +2,13 @@ package br.com.boletos.service.sicoob.models;
 
 import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarJurosMora;
 import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarMulta;
+import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarNaoRecebimento;
 import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarProtesto;
+import static br.com.sysdesc.util.classes.DateUtil.addDays;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.jrimum.texgit.FlatFile;
 import org.jrimum.texgit.Record;
@@ -105,10 +108,12 @@ public class DetalheSicoob {
 
         BoletoDadosPagamento pagamento = boleto.getBoletoDadosPagamento();
 
-        detalheSSicoob.setInformacao5(montarJurosMora(pagamento.getCodigoJurosMora(), boleto.getValorBoleto(), pagamento.getValorJurosMora()));
-        detalheSSicoob.setInformacao6(montarMulta(pagamento.getCodigoMulta(), boleto.getValorBoleto(), pagamento.getValorMulta()));
-        detalheSSicoob.setInformacao7(montarProtesto(pagamento.getCodigoProtesto(), pagamento.getDataLimitePagamento()));
-        detalheSSicoob.setInformacao8("");
+        Date diaProtesto = addDays(boleto.getDataVencimento(), pagamento.getDiasProtesto());
+
+        detalheSSicoob.setInformacao5(montarNaoRecebimento(pagamento.getDataLimitePagamento()));
+        detalheSSicoob.setInformacao6(montarJurosMora(pagamento.getCodigoJurosMora(), boleto.getValorBoleto(), pagamento.getValorJurosMora()));
+        detalheSSicoob.setInformacao7(montarMulta(pagamento.getCodigoMulta(), boleto.getValorBoleto(), pagamento.getValorMulta()));
+        detalheSSicoob.setInformacao8(montarProtesto(pagamento.getCodigoProtesto(), diaProtesto));
         detalheSSicoob.setInformacao9("");
     }
 

@@ -19,11 +19,11 @@ public class InstrucoesSacadoUtil {
         numberFormat.setMinimumFractionDigits(2);
     }
 
-    public static String montarProtesto(Long codigoProtesto, Date dataLimiteProtesto) {
+    public static String montarProtesto(Long codigoProtesto, Date dataProtesto) {
 
         if (TipoProtestoEnum.DIAS_CORRIDOS.getCodigo().equals(codigoProtesto)) {
 
-            return String.format("NÃO RECEBER APÓS %S", DateUtil.format(DateUtil.FORMATO_DD_MM_YYY, dataLimiteProtesto));
+            return String.format("PROTESTAR APÓS %s", DateUtil.format(DateUtil.FORMATO_DD_MM_YYY, dataProtesto));
         }
 
         return StringUtil.STRING_VAZIA;
@@ -33,7 +33,7 @@ public class InstrucoesSacadoUtil {
 
         if (TipoMultaJurosEnum.TAXA_MENSAL.getCodigo().equals(codigoMulta)) {
 
-            return String.format("APÓS VENCIMENTO COBRAR MULTA DE %s",
+            return String.format("APÓS VENC. COBRAR MULTA DE %s",
                     numberFormat.format(calcularValorPorPercentual(valorBoleto, valorMulta).doubleValue()));
         }
 
@@ -65,5 +65,10 @@ public class InstrucoesSacadoUtil {
     public static BigDecimal calcularValorPorPercentual(BigDecimal valorTotal, BigDecimal percentual) {
 
         return valorTotal.multiply(percentual.divide(BigDecimal.valueOf(100.0), 4, RoundingMode.HALF_EVEN));
+    }
+
+    public static String montarNaoRecebimento(Date diaMaximoPagamento) {
+
+        return String.format("NÃO RECEBER APÓS %s", DateUtil.format(DateUtil.FORMATO_DD_MM_YYY, diaMaximoPagamento));
     }
 }

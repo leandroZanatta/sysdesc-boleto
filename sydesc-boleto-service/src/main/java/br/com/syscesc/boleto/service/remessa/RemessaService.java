@@ -1,5 +1,6 @@
 package br.com.syscesc.boleto.service.remessa;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
@@ -17,10 +18,10 @@ import br.com.sysdesc.boleto.repository.model.Banco;
 import br.com.sysdesc.boleto.repository.model.Boleto;
 import br.com.sysdesc.boleto.repository.model.ConfiguracaoRemessa;
 import br.com.sysdesc.boleto.repository.model.Remessa;
-import br.com.sysdesc.boletos.util.StringOuputStream;
 import br.com.sysdesc.util.classes.ListUtil;
 import br.com.sysdesc.util.enumeradores.TipoStatusBoletoEnum;
 import br.com.sysdesc.util.enumeradores.TipoStatusRemessaEnum;
+import br.com.sysdesc.util.vo.PesquisaRemessaVO;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -52,15 +53,15 @@ public class RemessaService {
 
                 FlatFile<Record> records = remessaFactory.getRemessaBuilder(banco).build(boletosParaEnviar, codigoRemessa);
 
-                StringOuputStream stringOuputStream = new StringOuputStream();
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-                IOUtils.writeLines(records.write(), null, stringOuputStream, StandardCharsets.UTF_8);
+                IOUtils.writeLines(records.write(), null, byteArrayOutputStream, StandardCharsets.UTF_8);
 
-                salvarRemessa(banco.getNumeroBanco(), codigoRemessa, stringOuputStream, boletosParaEnviar);
+                salvarRemessa(banco.getNumeroBanco(), codigoRemessa, byteArrayOutputStream, boletosParaEnviar);
 
                 salvarConfiguracaoRemessa(banco.getNumeroBanco(), codigoRemessa);
 
-                boletosParaEnviar.forEach(boleto -> boleto.setCodigoStatus(TipoStatusBoletoEnum.ENVIANDO_REMESSA.getCodigo()));
+                boletosParaEnviar.forEach(boleto -> boleto.setCodigoStatus(TipoStatusBoletoEnum.REMESSA_GERADA.getCodigo()));
 
                 boletoDAO.salvar(boletosParaEnviar);
 
@@ -73,13 +74,22 @@ public class RemessaService {
 
     private void salvarConfiguracaoRemessa(Long numeroBanco, Long codigoRemessa) {
 
-        configuracaoRemessaDAO.salvar(new ConfiguracaoRemessa(numeroBanco, codigoRemessa));
+        ConfiguracaoRemessa configuracaoRemessa = configuracaoRemessaDAO.obterPorId(numeroBanco);
+
+        if (configuracaoRemessa == null) {
+            configuracaoRemessa = new ConfiguracaoRemessa();
+            configuracaoRemessa.setNumeroBanco(numeroBanco);
+        }
+
+        configuracaoRemessa.setNumeroRemessa(codigoRemessa);
+
+        configuracaoRemessaDAO.salvar(configuracaoRemessa);
     }
 
-    private void salvarRemessa(Long numeroBanco, Long codigoRemessa, StringOuputStream stringOuputStream, List<Boleto> boletosParaEnviar) {
+    private void salvarRemessa(Long numeroBanco, Long codigoRemessa, ByteArrayOutputStream stringOuputStream, List<Boleto> boletosParaEnviar) {
 
         Remessa remessa = new Remessa();
-        remessa.setArquivo(stringOuputStream.toString().getBytes());
+        remessa.setArquivo(stringOuputStream.toByteArray());
         remessa.setCodigoStatus(TipoStatusRemessaEnum.GERADO.getCodigo());
         remessa.setDataCadastro(new Date());
         remessa.setNumeroBanco(numeroBanco);
@@ -89,9 +99,14 @@ public class RemessaService {
         remessaDAO.salvar(remessa);
     }
 
-    public List<Remessa> pesquisarRemessas() {
+    public List<Remessa> pesquisarRemessas(PesquisaRemessaVO pesquisa) {
 
-        return remessaDAO.listar();
+        return remessaDAO.pesquisarRemessas(pesquisa);
+    }
+
+    public void salvar(Remessa remessa) {
+
+        remessaDAO.salvar(remessa);
     }
 
 }
