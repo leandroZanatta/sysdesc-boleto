@@ -33,7 +33,7 @@ public class InstrucoesSacadoUtil {
 
         if (TipoMultaJurosEnum.TAXA_MENSAL.getCodigo().equals(codigoMulta)) {
 
-            return String.format("APÓS VENC. COBRAR MULTA DE %s",
+            return String.format("APÓS VENC. COBRAR MULTA DE R$ %s",
                     numberFormat.format(calcularValorPorPercentual(valorBoleto, valorMulta).doubleValue()));
         }
 
