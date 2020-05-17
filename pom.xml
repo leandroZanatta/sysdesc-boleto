@@ -3,15 +3,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>br.com.sysdesc</groupId>
 	<artifactId>sysdesc-boleto</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<name>SysdescBoleto</name>
 	<description>Geração de Boletos</description>
 	<packaging>pom</packaging>
 
 	<properties>
-		<sysdesc.version>0.0.1</sysdesc.version>
-		<sysdesc.util.version>0.0.1</sysdesc.util.version>
-		<sysdesc.pesquisa.version>0.0.1</sysdesc.pesquisa.version>
+		<sysdesc.version>0.0.2</sysdesc.version>
+		<sysdesc.util.version>0.0.2</sysdesc.util.version>
+		<sysdesc.pesquisa.version>0.0.2</sysdesc.pesquisa.version>
 	</properties>
 	<modules>
 		<module>sysdesc-boleto-util</module>
