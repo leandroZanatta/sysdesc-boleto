@@ -15,32 +15,29 @@ import br.com.sysdesc.util.resources.Configuracoes;
 
 public class RemessaSicoobBuilder implements RemessaBuilder {
 
-	private final ConfiguracaoBoleto configuracaoBoleto;
+    private final ConfiguracaoBoleto configuracaoBoleto;
 
-	public RemessaSicoobBuilder(ConfiguracaoBoleto configuracaoBoleto) {
-		this.configuracaoBoleto = configuracaoBoleto;
-	}
+    public RemessaSicoobBuilder(ConfiguracaoBoleto configuracaoBoleto) {
+        this.configuracaoBoleto = configuracaoBoleto;
+    }
 
-	@Override
-	public FlatFile<Record> build(List<Boleto> boletosParaEnviar) {
+    @Override
+    public FlatFile<Record> build(List<Boleto> boletosParaEnviar, Long codigoRemessa) {
 
-		FlatFile<Record> records = Texgit.createFlatFile(
-				new File(Configuracoes.FOLDER_RESOURCES + "/schemas/sicoob/remessa_sicoob_240.txg.xml"));
+        FlatFile<Record> records = Texgit.createFlatFile(new File(Configuracoes.FOLDER_RESOURCES + "/schemas/sicoob/remessa_sicoob_240.txg.xml"));
 
-		// Criar controle de código de remessas armazenar no banco
-		Long codigoRemessa = 1L;
+        Long numeroRemessaLote = 1L;
 
-		// Criar controle de Lotes de remessas armazenar no banco
-		Long numeroRemessaLote = 1L;
-		RemessaSicoob remessaSicoob = new RemessaSicoob(codigoRemessa, configuracaoBoleto);
-		remessaSicoob.criarLote(numeroRemessaLote);
+        RemessaSicoob remessaSicoob = new RemessaSicoob(codigoRemessa, configuracaoBoleto);
 
-		boletosParaEnviar.forEach(boleto -> remessaSicoob.criarDetalhe(boleto));
+        remessaSicoob.criarLote(numeroRemessaLote);
 
-		remessaSicoob.build(records);
+        boletosParaEnviar.forEach(boleto -> remessaSicoob.criarDetalhe(boleto));
 
-		return records;
+        remessaSicoob.build(records);
 
-	}
+        return records;
+
+    }
 
 }

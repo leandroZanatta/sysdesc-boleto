@@ -9,6 +9,6 @@ import br.com.sysdesc.boleto.repository.model.Boleto;
 
 public interface RemessaBuilder {
 
-	public FlatFile<Record> build(List<Boleto> boletosParaEnviar);
+    public FlatFile<Record> build(List<Boleto> boletosParaEnviar, Long codigoRemessa);
 
 }

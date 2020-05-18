@@ -1,57 +1,97 @@
 package br.com.syscesc.boleto.service.remessa;
 
-import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.jrimum.texgit.FlatFile;
 import org.jrimum.texgit.Record;
 
 import br.com.boletos.service.factory.RemessaFactory;
 import br.com.sysdesc.boleto.repository.dao.BancoDAO;
 import br.com.sysdesc.boleto.repository.dao.BoletoDAO;
+import br.com.sysdesc.boleto.repository.dao.ConfiguracaoRemessaDAO;
+import br.com.sysdesc.boleto.repository.dao.RemessaDAO;
 import br.com.sysdesc.boleto.repository.model.Banco;
 import br.com.sysdesc.boleto.repository.model.Boleto;
+import br.com.sysdesc.boleto.repository.model.ConfiguracaoRemessa;
+import br.com.sysdesc.boleto.repository.model.Remessa;
+import br.com.sysdesc.boletos.util.StringOuputStream;
 import br.com.sysdesc.util.classes.ListUtil;
 import br.com.sysdesc.util.enumeradores.TipoStatusBoletoEnum;
-import br.com.sysdesc.util.resources.Configuracoes;
+import br.com.sysdesc.util.enumeradores.TipoStatusRemessaEnum;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RemessaService {
 
-	private RemessaFactory remessaFactory = new RemessaFactory();
+    private RemessaFactory remessaFactory = new RemessaFactory();
 
-	private BoletoDAO boletoDAO = new BoletoDAO();
+    private BoletoDAO boletoDAO = new BoletoDAO();
 
-	private BancoDAO bancoDAO = new BancoDAO();
+    private BancoDAO bancoDAO = new BancoDAO();
 
-	public void processarRemessaBancosSuportados() {
+    private ConfiguracaoRemessaDAO configuracaoRemessaDAO = new ConfiguracaoRemessaDAO();
 
-		bancoDAO.buscarBancosSuporteBoleto().forEach(this::gerarRemessa);
-	}
+    private RemessaDAO remessaDAO = new RemessaDAO();
 
-	private void gerarRemessa(Banco banco) {
+    public void processarRemessaBancosSuportados() {
 
-		List<Boleto> boletosParaEnviar = boletoDAO.buscarBoletosParaEnvio(banco.getNumeroBanco());
+        bancoDAO.buscarBancosSuporteBoleto().forEach(this::gerarRemessa);
+    }
 
-		if (!ListUtil.isNullOrEmpty(boletosParaEnviar)) {
-			try {
+    private void gerarRemessa(Banco banco) {
 
-				FlatFile<Record> records = remessaFactory.getRemessaBuilder(banco).build(boletosParaEnviar);
+        List<Boleto> boletosParaEnviar = boletoDAO.buscarBoletosParaEnvio(banco.getNumeroBanco());
 
-				FileUtils.writeLines(new File(Configuracoes.FOLDER_TRANSFER + "/Remessa.rem"), records.write(), "\r\n");
+        if (!ListUtil.isNullOrEmpty(boletosParaEnviar)) {
+            try {
 
-				boletosParaEnviar
-						.forEach(boleto -> boleto.setCodigoStatus(TipoStatusBoletoEnum.ENVIANDO_REMESSA.getCodigo()));
+                Long codigoRemessa = configuracaoRemessaDAO.buscarCodigoRemessaPorBanco(banco.getNumeroBanco());
 
-				boletoDAO.salvar(boletosParaEnviar);
+                FlatFile<Record> records = remessaFactory.getRemessaBuilder(banco).build(boletosParaEnviar, codigoRemessa);
 
-			} catch (Exception e) {
+                StringOuputStream stringOuputStream = new StringOuputStream();
 
-				log.error("Erro Gerando Remessa", e);
-			}
-		}
-	}
+                IOUtils.writeLines(records.write(), null, stringOuputStream, StandardCharsets.UTF_8);
+
+                salvarRemessa(banco.getNumeroBanco(), codigoRemessa, stringOuputStream, boletosParaEnviar);
+
+                salvarConfiguracaoRemessa(banco.getNumeroBanco(), codigoRemessa);
+
+                boletosParaEnviar.forEach(boleto -> boleto.setCodigoStatus(TipoStatusBoletoEnum.ENVIANDO_REMESSA.getCodigo()));
+
+                boletoDAO.salvar(boletosParaEnviar);
+
+            } catch (Exception e) {
+
+                log.error("Erro Gerando Remessa", e);
+            }
+        }
+    }
+
+    private void salvarConfiguracaoRemessa(Long numeroBanco, Long codigoRemessa) {
+
+        configuracaoRemessaDAO.salvar(new ConfiguracaoRemessa(numeroBanco, codigoRemessa));
+    }
+
+    private void salvarRemessa(Long numeroBanco, Long codigoRemessa, StringOuputStream stringOuputStream, List<Boleto> boletosParaEnviar) {
+
+        Remessa remessa = new Remessa();
+        remessa.setArquivo(stringOuputStream.toString().getBytes());
+        remessa.setCodigoStatus(TipoStatusRemessaEnum.GERADO.getCodigo());
+        remessa.setDataCadastro(new Date());
+        remessa.setNumeroBanco(numeroBanco);
+        remessa.setNumeroRemessa(codigoRemessa);
+        boletosParaEnviar.forEach(remessa::addBoleto);
+
+        remessaDAO.salvar(remessa);
+    }
+
+    public List<Remessa> pesquisarRemessas() {
+
+        return remessaDAO.listar();
+    }
 
 }

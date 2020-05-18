@@ -1,8 +1,12 @@
 package br.com.syscesc.boleto.service.boleto;
 
+import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarJurosMora;
+import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarMulta;
+import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarProtesto;
+import static br.com.sysdesc.util.classes.DateUtil.addDays;
+
+import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.jrimum.bopepo.Boleto;
 import org.jrimum.bopepo.view.BoletoViewer;
@@ -26,10 +30,8 @@ import br.com.sysdesc.boletos.util.vo.PagamentoBoletoVO;
 import br.com.sysdesc.util.classes.DateUtil;
 import br.com.sysdesc.util.classes.LongUtil;
 import br.com.sysdesc.util.classes.StringUtil;
-import br.com.sysdesc.util.constants.MensagemConstants;
 import br.com.sysdesc.util.enumeradores.TipoStatusBoletoEnum;
 import br.com.sysdesc.util.enumeradores.TipoTituloEnum;
-import br.com.sysdesc.util.exception.SysDescException;
 
 public class BoletoService {
 
@@ -73,6 +75,9 @@ public class BoletoService {
 
         String nossoNumeroDV = nossoNumero.substring(nossoNumero.length() - 1, nossoNumero.length());
 
+        Date diaMaximoPagamento = addDays(pagamentoBoleto.getDataVencimento(), configuracao.getDiasMaximoPagamento());
+        BigDecimal valor = pagamentoBoleto.getValorPagamento();
+
         Boleto boleto = new Boleto(titulo);
         boleto.setLocalPagamento("Pagável  em qualquer Banco até o Vencimento.");
         boleto.setInstrucaoAoSacado("");
@@ -81,7 +86,9 @@ public class BoletoService {
         boleto.addTextosExtras("txtRsAgenciaCodigoCedente", numeroAgencia + "-" + digitoAgencia + " / " + numeroConta + "-" + digitoConta);
         boleto.addTextosExtras("txtFcAgenciaCodigoCedente", numeroAgencia + "-" + digitoAgencia + " / " + numeroConta + "-" + digitoConta);
 
-        this.gerarInstrucoesSacado(boleto, pagamentoBoleto.getInstrucoes());
+        boleto.setInstrucao1(montarJurosMora(configuracao.getCodigoJurosMora(), valor, configuracao.getValorJurosMora()));
+        boleto.setInstrucao2(montarMulta(configuracao.getCodigoMulta(), valor, configuracao.getValorMulta()));
+        boleto.setInstrucao3(montarProtesto(configuracao.getCodigoProtesto(), diaMaximoPagamento));
 
         byte[] arquivoBoleto = new BoletoViewer(boleto).getPdfAsByteArray();
 
@@ -95,14 +102,14 @@ public class BoletoService {
         modeloBoleto.setDataCadastro(dataDocumento);
         modeloBoleto.setDataVencimento(pagamentoBoleto.getDataVencimento());
         modeloBoleto.setNossoNumero(nossoNumero);
-        modeloBoleto.setCodigoBarras(boleto.getCodigoDeBarras().write());
+        modeloBoleto.setCodigoBarras(StringUtil.formatarNumero(boleto.getLinhaDigitavel().write()));
         modeloBoleto.setValorBoleto(pagamentoBoleto.getValorPagamento());
         modeloBoleto.setCodigoStatus(TipoStatusBoletoEnum.GERADO.getCodigo());
         modeloBoleto.setBoletoDadosCliente(cliente);
         modeloBoleto.setAceite(aceite.name());
         modeloBoleto.setEspecieTitulo(tipoTitulo.getCodigo().longValue());
         modeloBoleto.setBoletoDadosSacadorAvalista(avalista);
-        modeloBoleto.setBoletoDadosPagamento(this.montarDadosPagamento(configuracao, pagamentoBoleto.getDataVencimento()));
+        modeloBoleto.setBoletoDadosPagamento(this.montarDadosPagamento(configuracao, diaMaximoPagamento, pagamentoBoleto.getDataVencimento()));
 
         if (modeloBoleto.getBoletoDadosSacadorAvalista() != null) {
             modeloBoleto.getBoletoDadosSacadorAvalista().setBoleto(modeloBoleto);
@@ -116,7 +123,7 @@ public class BoletoService {
         return modeloBoleto;
     }
 
-    private BoletoDadosPagamento montarDadosPagamento(ConfiguracaoBoleto configuracao, Date dataVencimento) {
+    private BoletoDadosPagamento montarDadosPagamento(ConfiguracaoBoleto configuracao, Date diaMaximoPagamento, Date dataVencimento) {
 
         Long codigoProtesto = configuracao.getCodigoProtesto();
 
@@ -128,7 +135,7 @@ public class BoletoService {
         boletoDadosPagamento.setCodigoMulta(configuracao.getCodigoMulta());
 
         boletoDadosPagamento.setDiasProtesto(codigoProtesto.equals(DIAS_CORRIDOS) ? configuracao.getDiasProtesto() : 0L);
-        boletoDadosPagamento.setDataLimitePagamento(DateUtil.addDays(dataVencimento, configuracao.getDiasMaximoPagamento()));
+        boletoDadosPagamento.setDataLimitePagamento(diaMaximoPagamento);
 
         boletoDadosPagamento.setDataJurosMora(calcularDataBaseDias(dataVencimento, configuracao.getDiasJurosMora()));
         boletoDadosPagamento.setDataMulta(calcularDataBaseDias(dataVencimento, configuracao.getDiasMulta()));
@@ -162,24 +169,6 @@ public class BoletoService {
         titulo.setTipoDeDocumento(TipoDeTitulo.valueOf(tipoTitulo.getCodigo()));
 
         return titulo;
-    }
-
-    private void gerarInstrucoesSacado(Boleto boleto, Map<Integer, String> instrucoes) {
-
-        Class<?> clazz = boleto.getClass();
-
-        for (Entry<Integer, String> entry : instrucoes.entrySet()) {
-
-            try {
-
-                clazz.getDeclaredField("instrucao" + entry.getKey()).set(boleto, entry.getValue());
-
-            } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-
-                throw new SysDescException(MensagemConstants.NUMERO_INSTRUCAO_PAGAMENTO_INVALIDA);
-            }
-        }
-
     }
 
     private Sacado gerarSacado(BoletoDadosCliente cliente) {

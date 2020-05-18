@@ -1,5 +1,9 @@
 package br.com.boletos.service.sicoob.models;
 
+import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarJurosMora;
+import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarMulta;
+import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarProtesto;
+
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 
@@ -88,6 +92,27 @@ public class DetalheSicoob {
         detalhePSicoob.setValorIof(BigDecimal.ZERO);
 
         this.gerarDetalheQ(boleto);
+        this.gerarDetalheR(boletoDadosPagamento, simpleDateFormat);
+        this.gerarDetalheS(boleto);
+
+        detalhePSicoob.setDetalheQSicoob(detalheQSicoob);
+        detalhePSicoob.setDetalheRSicoob(detalheRSicoob);
+        detalhePSicoob.setDetalheSSicoob(detalheSSicoob);
+
+    }
+
+    private void gerarDetalheS(Boleto boleto) {
+
+        BoletoDadosPagamento pagamento = boleto.getBoletoDadosPagamento();
+
+        detalheSSicoob.setInformacao5(montarJurosMora(pagamento.getCodigoJurosMora(), boleto.getValorBoleto(), pagamento.getValorJurosMora()));
+        detalheSSicoob.setInformacao6(montarMulta(pagamento.getCodigoMulta(), boleto.getValorBoleto(), pagamento.getValorMulta()));
+        detalheSSicoob.setInformacao7(montarProtesto(pagamento.getCodigoProtesto(), pagamento.getDataLimitePagamento()));
+        detalheSSicoob.setInformacao8("");
+        detalheSSicoob.setInformacao9("");
+    }
+
+    private void gerarDetalheR(BoletoDadosPagamento boletoDadosPagamento, SimpleDateFormat simpleDateFormat) {
 
         detalheRSicoob.setDataLimitePagamento(simpleDateFormat.format(boletoDadosPagamento.getDataLimitePagamento()));
 
@@ -101,17 +126,6 @@ public class DetalheSicoob {
         detalheRSicoob.setDataDesconto3("");
         detalheRSicoob.setValorDesconto2(BigDecimal.ZERO);
         detalheRSicoob.setValorDesconto3(BigDecimal.ZERO);
-
-        detalheSSicoob.setInformacao5("APÓS VENCIMENTO MULTA DE XX");
-        detalheSSicoob.setInformacao6("APÓS VENCIMENTO, MORA DE XX");
-        detalheSSicoob.setInformacao7("APENAS TESTE.");
-        detalheSSicoob.setInformacao8("");
-        detalheSSicoob.setInformacao9("");
-
-        detalhePSicoob.setDetalheQSicoob(detalheQSicoob);
-        detalhePSicoob.setDetalheRSicoob(detalheRSicoob);
-        detalhePSicoob.setDetalheSSicoob(detalheSSicoob);
-
     }
 
     private void gerarDetalheQ(Boleto boleto) {

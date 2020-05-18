@@ -78,4 +78,8 @@ public class Boleto implements Serializable {
 
     @OneToOne(mappedBy = "boleto", cascade = CascadeType.ALL)
     private BoletoDadosPagamento boletoDadosPagamento;
+
+    @OneToOne(mappedBy = "boleto")
+    private RemessaBoleto remessaBoleto;
+
 }
