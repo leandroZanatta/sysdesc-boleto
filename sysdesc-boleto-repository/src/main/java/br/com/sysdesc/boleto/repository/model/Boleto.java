@@ -70,6 +70,9 @@ public class Boleto implements Serializable {
     @Column(name = "cd_status")
     private Long codigoStatus;
 
+    @Column(name = "cd_statusemail")
+    private Long codigoStatusEmail;
+
     @OneToOne(mappedBy = "boleto", cascade = CascadeType.ALL)
     private BoletoDadosCliente boletoDadosCliente;
 

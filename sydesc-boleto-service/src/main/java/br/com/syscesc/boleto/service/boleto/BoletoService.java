@@ -32,6 +32,7 @@ import br.com.sysdesc.boletos.util.vo.PagamentoBoletoVO;
 import br.com.sysdesc.util.classes.DateUtil;
 import br.com.sysdesc.util.classes.LongUtil;
 import br.com.sysdesc.util.classes.StringUtil;
+import br.com.sysdesc.util.enumeradores.TipoEnvioEmailEnum;
 import br.com.sysdesc.util.enumeradores.TipoStatusBoletoEnum;
 import br.com.sysdesc.util.enumeradores.TipoTituloEnum;
 
@@ -115,6 +116,7 @@ public class BoletoService {
         modeloBoleto.setEspecieTitulo(tipoTitulo.getCodigo().longValue());
         modeloBoleto.setBoletoDadosSacadorAvalista(avalista);
         modeloBoleto.setBoletoDadosPagamento(this.montarDadosPagamento(configuracao, diaMaximoPagamento, pagamentoBoleto.getDataVencimento()));
+        modeloBoleto.setCodigoStatusEmail(TipoEnvioEmailEnum.AGUARDANDO.getCodigo());
 
         if (modeloBoleto.getBoletoDadosSacadorAvalista() != null) {
             modeloBoleto.getBoletoDadosSacadorAvalista().setBoleto(modeloBoleto);
