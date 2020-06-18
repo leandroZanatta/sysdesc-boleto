@@ -1,4 +1,4 @@
-package br.com.boletos.service.sicoob.models;
+package br.com.boletos.service.sicoob.remessa.models;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

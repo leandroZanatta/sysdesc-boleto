@@ -12,6 +12,7 @@
 		<sysdesc.version>0.0.2</sysdesc.version>
 		<sysdesc.util.version>0.0.2</sysdesc.util.version>
 		<sysdesc.pesquisa.version>0.0.2</sysdesc.pesquisa.version>
+		<sysdesc.arquivos.version>0.0.1</sysdesc.arquivos.version>
 	</properties>
 	<modules>
 		<module>sysdesc-boleto-util</module>

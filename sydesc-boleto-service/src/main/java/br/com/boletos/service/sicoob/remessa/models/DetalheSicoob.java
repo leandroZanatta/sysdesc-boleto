@@ -1,4 +1,4 @@
-package br.com.boletos.service.sicoob.models;
+package br.com.boletos.service.sicoob.remessa.models;
 
 import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarJurosMora;
 import static br.com.sysdesc.boletos.util.InstrucoesSacadoUtil.montarMulta;

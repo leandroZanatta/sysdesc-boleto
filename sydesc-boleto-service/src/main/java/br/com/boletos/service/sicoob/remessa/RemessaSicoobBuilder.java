@@ -8,7 +8,7 @@ import org.jrimum.texgit.Record;
 import org.jrimum.texgit.Texgit;
 
 import br.com.boletos.service.builders.RemessaBuilder;
-import br.com.boletos.service.sicoob.models.RemessaSicoob;
+import br.com.boletos.service.sicoob.remessa.models.RemessaSicoob;
 import br.com.sysdesc.boleto.repository.model.Boleto;
 import br.com.sysdesc.boleto.repository.model.ConfiguracaoBoleto;
 import br.com.sysdesc.util.resources.Configuracoes;

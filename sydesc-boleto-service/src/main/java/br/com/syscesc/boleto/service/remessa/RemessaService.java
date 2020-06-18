@@ -21,7 +21,7 @@ import br.com.sysdesc.boleto.repository.model.Remessa;
 import br.com.sysdesc.util.classes.ListUtil;
 import br.com.sysdesc.util.enumeradores.TipoStatusBoletoEnum;
 import br.com.sysdesc.util.enumeradores.TipoStatusRemessaEnum;
-import br.com.sysdesc.util.vo.PesquisaRemessaVO;
+import br.com.sysdesc.util.vo.PesquisaRemessaRetornoVO;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -99,7 +99,7 @@ public class RemessaService {
         remessaDAO.salvar(remessa);
     }
 
-    public List<Remessa> pesquisarRemessas(PesquisaRemessaVO pesquisa) {
+    public List<Remessa> pesquisarRemessas(PesquisaRemessaRetornoVO pesquisa) {
 
         return remessaDAO.pesquisarRemessas(pesquisa);
     }

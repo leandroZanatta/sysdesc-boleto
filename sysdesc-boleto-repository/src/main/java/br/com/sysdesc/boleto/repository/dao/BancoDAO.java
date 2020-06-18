@@ -22,4 +22,11 @@ public class BancoDAO extends PesquisableDAOImpl<Banco> {
 				.list(banco);
 	}
 
+	public List<Banco> obterBancosComBoleto(Long codigoBanco) {
+
+		return from()
+				.where(banco.numeroBanco.eq(codigoBanco).and(subQuery().from(configuracaoBoleto).where(configuracaoBoleto.banco.eq(banco)).exists()))
+				.list(banco);
+	}
+
 }
