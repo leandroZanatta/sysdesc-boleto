@@ -37,7 +37,7 @@ public class RemessaSicoob {
 		this.criarAgencia();
 		this.criarCedente();
 
-		headerArquivoSicoob.setDataGeracao(new SimpleDateFormat("ddMMYYYY").format(new Date()));
+		headerArquivoSicoob.setDataGeracao(new SimpleDateFormat("ddMMyyyy").format(new Date()));
 		headerArquivoSicoob.setHoraGeracao(new SimpleDateFormat("HHmmss").format(new Date()));
 		headerArquivoSicoob.setCodigoRemessa(codigoRemessaArquivo);
 	}

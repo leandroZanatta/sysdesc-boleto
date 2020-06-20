@@ -19,80 +19,83 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RecordUtil {
 
-    public static void createRecord(RecordModel model, FlatFile<Record> records) {
+	private RecordUtil() {
+	}
 
-        Record record = records.createRecord(model.getRecordName());
+	public static void createRecord(RecordModel model, FlatFile<Record> records) {
 
-        convertModel(model, record, records);
+		Record record = records.createRecord(model.getRecordName());
 
-        records.addRecord(record);
-    }
+		convertModel(model, record, records);
 
-    private static void convertModel(Model model, Record record, FlatFile<Record> records) {
+		records.addRecord(record);
+	}
 
-        for (Field field : model.getClass().getDeclaredFields()) {
+	private static void convertModel(Model model, Record record, FlatFile<Record> records) {
 
-            try {
-                if (Arrays.asList(field.getType().getInterfaces()).contains(InnerRecordModel.class)) {
+		for (Field field : model.getClass().getDeclaredFields()) {
 
-                    createInnerRecord(model, record, records, field);
+			try {
+				if (Arrays.asList(field.getType().getInterfaces()).contains(InnerRecordModel.class)) {
 
-                } else if (Arrays.asList(field.getType().getInterfaces()).contains(Model.class)) {
+					createInnerRecord(model, record, records, field);
 
-                    convertModel((Model) getObject(model, field), record, records);
+				} else if (Arrays.asList(field.getType().getInterfaces()).contains(Model.class)) {
 
-                } else if (field.isAnnotationPresent(XmlAnotation.class)) {
+					convertModel((Model) getObject(model, field), record, records);
 
-                    XmlAnotation xmlAnotation = field.getAnnotation(XmlAnotation.class);
+				} else if (field.isAnnotationPresent(XmlAnotation.class)) {
 
-                    Object value = getObject(model, field);
+					XmlAnotation xmlAnotation = field.getAnnotation(XmlAnotation.class);
 
-                    if (value == null) {
-                        System.out.println("CAMPO NULLO");
-                    }
+					Object value = getObject(model, field);
 
-                    record.setValue(xmlAnotation.name(), formatValue(value, xmlAnotation));
-                }
-            } catch (IllegalArgumentException | IllegalAccessException e) {
+					if (value == null) {
+						log.warn("Campo Nullo:{}", xmlAnotation.name());
+					}
 
-                log.error("Erro buscando valor do modelo", e);
-            }
-        }
-    }
+					record.setValue(xmlAnotation.name(), formatValue(value, xmlAnotation));
+				}
+			} catch (IllegalArgumentException | IllegalAccessException e) {
 
-    private static void createInnerRecord(Model model, Record record, FlatFile<Record> records, Field field) throws IllegalAccessException {
+				log.error("Erro buscando valor do modelo", e);
+			}
+		}
+	}
 
-        InnerRecordModel innerModel = (InnerRecordModel) getObject(model, field);
+	private static void createInnerRecord(Model model, Record record, FlatFile<Record> records, Field field) throws IllegalAccessException {
 
-        Record innerRecord = records.createRecord(innerModel.getRecordName());
+		InnerRecordModel innerModel = (InnerRecordModel) getObject(model, field);
 
-        convertModel(innerModel, innerRecord, records);
+		Record innerRecord = records.createRecord(innerModel.getRecordName());
 
-        record.addInnerRecord(innerRecord);
-    }
+		convertModel(innerModel, innerRecord, records);
 
-    private static Object getObject(Model model, Field field) throws IllegalAccessException {
+		record.addInnerRecord(innerRecord);
+	}
 
-        field.setAccessible(true);
+	private static Object getObject(Model model, Field field) throws IllegalAccessException {
 
-        return field.get(model);
-    }
+		field.setAccessible(true);
 
-    private static Object formatValue(Object value, XmlAnotation xmlAnotation) {
+		return field.get(model);
+	}
 
-        if (xmlAnotation.type().equals(BigDecimal.class)) {
+	private static Object formatValue(Object value, XmlAnotation xmlAnotation) {
 
-            BigDecimal valor = ((BigDecimal) value).setScale(xmlAnotation.decimal(), RoundingMode.HALF_EVEN);
+		if (xmlAnotation.type().equals(BigDecimal.class)) {
 
-            NumberFormat numberFormat = NumberFormat.getNumberInstance();
+			BigDecimal valor = ((BigDecimal) value).setScale(xmlAnotation.decimal(), RoundingMode.HALF_EVEN);
 
-            numberFormat.setMaximumFractionDigits(xmlAnotation.decimal());
-            numberFormat.setMinimumFractionDigits(xmlAnotation.decimal());
+			NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
-            return StringUtil.formatarNumero(numberFormat.format(valor));
-        }
+			numberFormat.setMaximumFractionDigits(xmlAnotation.decimal());
+			numberFormat.setMinimumFractionDigits(xmlAnotation.decimal());
 
-        return value;
-    }
+			return StringUtil.formatarNumero(numberFormat.format(valor));
+		}
+
+		return value;
+	}
 
 }

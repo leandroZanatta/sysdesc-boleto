@@ -12,63 +12,66 @@ import br.com.sysdesc.util.classes.StringUtil;
 
 public class InstrucoesSacadoUtil {
 
-    private static NumberFormat numberFormat = NumberFormat.getNumberInstance();
+	private InstrucoesSacadoUtil() {
+	}
 
-    static {
-        numberFormat.setMaximumFractionDigits(2);
-        numberFormat.setMinimumFractionDigits(2);
-    }
+	private static NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
-    public static String montarProtesto(Long codigoProtesto, Date dataProtesto) {
+	static {
+		numberFormat.setMaximumFractionDigits(2);
+		numberFormat.setMinimumFractionDigits(2);
+	}
 
-        if (TipoProtestoEnum.DIAS_CORRIDOS.getCodigo().equals(codigoProtesto)) {
+	public static String montarProtesto(Long codigoProtesto, Date dataProtesto) {
 
-            return String.format("PROTESTAR APÓS %s", DateUtil.format(DateUtil.FORMATO_DD_MM_YYY, dataProtesto));
-        }
+		if (TipoProtestoEnum.DIAS_CORRIDOS.getCodigo().equals(codigoProtesto)) {
 
-        return StringUtil.STRING_VAZIA;
-    }
+			return String.format("PROTESTAR APÓS %s", DateUtil.format(DateUtil.FORMATO_DD_MM_YYY, dataProtesto));
+		}
 
-    public static String montarMulta(Long codigoMulta, BigDecimal valorBoleto, BigDecimal valorMulta) {
+		return StringUtil.STRING_VAZIA;
+	}
 
-        if (TipoMultaJurosEnum.TAXA_MENSAL.getCodigo().equals(codigoMulta)) {
+	public static String montarMulta(Long codigoMulta, BigDecimal valorBoleto, BigDecimal valorMulta) {
 
-            return String.format("APÓS VENC. COBRAR MULTA DE R$ %s",
-                    numberFormat.format(calcularValorPorPercentual(valorBoleto, valorMulta).doubleValue()));
-        }
+		if (TipoMultaJurosEnum.TAXA_MENSAL.getCodigo().equals(codigoMulta)) {
 
-        if (TipoMultaJurosEnum.VALOR_DIA.getCodigo().equals(codigoMulta)) {
+			return String.format("APÓS VENC. COBRAR MULTA DE R$ %s",
+					numberFormat.format(calcularValorPorPercentual(valorBoleto, valorMulta).doubleValue()));
+		}
 
-            return String.format("APÓS VENC. COBRAR MULTA DE R$%s AO DIA",
-                    numberFormat.format(calcularValorPorPercentual(valorBoleto, valorMulta).doubleValue()));
-        }
+		if (TipoMultaJurosEnum.VALOR_DIA.getCodigo().equals(codigoMulta)) {
 
-        return StringUtil.STRING_VAZIA;
-    }
+			return String.format("APÓS VENC. COBRAR MULTA DE R$%s AO DIA",
+					numberFormat.format(calcularValorPorPercentual(valorBoleto, valorMulta).doubleValue()));
+		}
 
-    public static String montarJurosMora(Long codigoJuros, BigDecimal valorBoleto, BigDecimal valorJuros) {
+		return StringUtil.STRING_VAZIA;
+	}
 
-        if (TipoMultaJurosEnum.TAXA_MENSAL.getCodigo().equals(codigoJuros)) {
+	public static String montarJurosMora(Long codigoJuros, BigDecimal valorBoleto, BigDecimal valorJuros) {
 
-            return String.format("APÓS VENC. COBRAR JUROS DE %s%% AO MÊS", numberFormat.format(valorJuros));
-        }
+		if (TipoMultaJurosEnum.TAXA_MENSAL.getCodigo().equals(codigoJuros)) {
 
-        if (TipoMultaJurosEnum.VALOR_DIA.getCodigo().equals(codigoJuros)) {
+			return String.format("APÓS VENC. COBRAR JUROS DE %s%% AO MÊS", numberFormat.format(valorJuros));
+		}
 
-            return String.format("APÓS VENC. COBRAR JUROS DE R$ %s AO DIA",
-                    numberFormat.format(calcularValorPorPercentual(valorBoleto, valorJuros).doubleValue()));
-        }
+		if (TipoMultaJurosEnum.VALOR_DIA.getCodigo().equals(codigoJuros)) {
 
-        return StringUtil.STRING_VAZIA;
-    }
+			return String.format("APÓS VENC. COBRAR JUROS DE R$ %s AO DIA",
+					numberFormat.format(calcularValorPorPercentual(valorBoleto, valorJuros).doubleValue()));
+		}
 
-    public static BigDecimal calcularValorPorPercentual(BigDecimal valorTotal, BigDecimal percentual) {
+		return StringUtil.STRING_VAZIA;
+	}
 
-        return valorTotal.multiply(percentual.divide(BigDecimal.valueOf(100.0), 4, RoundingMode.HALF_EVEN));
-    }
+	public static BigDecimal calcularValorPorPercentual(BigDecimal valorTotal, BigDecimal percentual) {
 
-    public static String montarNaoRecebimento(Date diaMaximoPagamento) {
+		return valorTotal.multiply(percentual.divide(BigDecimal.valueOf(100.0), 4, RoundingMode.HALF_EVEN));
+	}
 
-        return String.format("NÃO RECEBER APÓS %s", DateUtil.format(DateUtil.FORMATO_DD_MM_YYY, diaMaximoPagamento));
-    }
+	public static String montarNaoRecebimento(Date diaMaximoPagamento) {
+
+		return String.format("NÃO RECEBER APÓS %s", DateUtil.format(DateUtil.FORMATO_DD_MM_YYY, diaMaximoPagamento));
+	}
 }
