@@ -8,8 +8,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import br.com.syscesc.boleto.service.boleto.sicoob.BoletoSicoobService;
-import br.com.sysdesc.boleto.repository.model.ConfiguracaoBoleto;
+import br.com.sysdesc.boletos.repository.model.ConfiguracaoBoleto;
+import br.com.sysdesc.boletos.service.boleto.sicoob.BoletoSicoobService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BoletoSicoobServiceTest {

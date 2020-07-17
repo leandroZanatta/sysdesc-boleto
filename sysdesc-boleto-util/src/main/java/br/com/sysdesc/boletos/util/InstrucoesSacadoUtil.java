@@ -42,7 +42,7 @@ public class InstrucoesSacadoUtil {
 
 		if (TipoMultaJurosEnum.VALOR_DIA.getCodigo().equals(codigoMulta)) {
 
-			return String.format("APÓS VENC. COBRAR MULTA DE R$%s AO DIA",
+			return String.format("APÓS VENC. COBRAR MULTA DE R$%s/DIA",
 					numberFormat.format(calcularValorPorPercentual(valorBoleto, valorMulta).doubleValue()));
 		}
 
@@ -53,12 +53,12 @@ public class InstrucoesSacadoUtil {
 
 		if (TipoMultaJurosEnum.TAXA_MENSAL.getCodigo().equals(codigoJuros)) {
 
-			return String.format("APÓS VENC. COBRAR JUROS DE %s%% AO MÊS", numberFormat.format(valorJuros));
+			return String.format("APÓS VENC. COBRAR JUROS DE %s%%/MÊS", numberFormat.format(valorJuros));
 		}
 
 		if (TipoMultaJurosEnum.VALOR_DIA.getCodigo().equals(codigoJuros)) {
 
-			return String.format("APÓS VENC. COBRAR JUROS DE R$ %s AO DIA",
+			return String.format("APÓS VENC. COBRAR JUROS DE R$ %s/DIA",
 					numberFormat.format(calcularValorPorPercentual(valorBoleto, valorJuros).doubleValue()));
 		}
 
